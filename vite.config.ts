@@ -12,7 +12,15 @@ export default defineConfig({
     // PWA support
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: [
+        'favicon.ico',
+        'apple-touch-icon.png',
+        'icon-16.png',
+        'icon-48.png',
+        'icon-128.png',
+        'icon-192.png',
+        'icon-512.png'
+      ],
       manifest: {
         name: 'GC Multi-Acc Pro',
         short_name: 'GCPro',

@@ -11,22 +11,46 @@ export const AccountEngine = {
   // Get accounts from Chrome Storage or LocalStorage
   async fetchAccounts(): Promise<Account[]> {
     if (IS_EXTENSION) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         chrome.storage.sync.get(['accounts'], (result) => {
+          const error = chrome.runtime.lastError;
+          if (error) {
+            reject(new Error(error.message || 'Failed to read accounts from storage'));
+            return;
+          }
+
           resolve(result.accounts || []);
         });
       });
     } else {
       const stored = localStorage.getItem('gcpro_accounts');
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) {
+        return [];
+      }
+
+      try {
+        return JSON.parse(stored);
+      } catch (error) {
+        console.warn('Failed to parse stored accounts from localStorage; resetting gcpro_accounts.', error);
+        localStorage.removeItem('gcpro_accounts');
+        return [];
+      }
     }
   },
 
   // Save accounts
   async saveAccounts(accounts: Account[]): Promise<void> {
     if (IS_EXTENSION) {
-      return new Promise((resolve) => {
-        chrome.storage.sync.set({ accounts }, () => resolve());
+      return new Promise((resolve, reject) => {
+        chrome.storage.sync.set({ accounts }, () => {
+          const error = chrome.runtime.lastError;
+          if (error) {
+            reject(new Error(error.message || 'Failed to save accounts to storage'));
+            return;
+          }
+
+          resolve();
+        });
       });
     } else {
       localStorage.setItem('gcpro_accounts', JSON.stringify(accounts));
