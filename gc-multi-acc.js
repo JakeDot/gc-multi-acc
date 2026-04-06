@@ -1,4 +1,4 @@
-export const userscriptCode = `// ==UserScript==
+// ==UserScript==
 // @name         Geocaching Multi-Account Switcher
 // @namespace    https://github.com/yourusername/gc-multi-account
 // @version      1.0.1
@@ -97,7 +97,7 @@ export const userscriptCode = `// ==UserScript==
                 
                 del.onclick = (e) => {
                     e.stopPropagation();
-                    if (confirm(\`Remove account: \${acc.username}?\`)) {
+                    if (confirm(`Remove account: \${acc.username}?`)) {
                         accounts.splice(index, 1);
                         saveAccounts(accounts);
                         renderPanel();
@@ -222,4 +222,3 @@ export const userscriptCode = `// ==UserScript==
     }
 
 })();
-`;
