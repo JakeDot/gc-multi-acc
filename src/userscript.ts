@@ -20,15 +20,28 @@ export const userscriptCode = `// ==UserScript==
     const WORKSPACE_OPEN_KEY = 'gc_workspace_open';
     const WORKSPACE_ACTIVE_TAB_KEY = 'gc_workspace_active_tab';
 
-    // Load state from storage
-    let accounts = GM_getValue(ACCOUNTS_KEY, []);
-    let workspaceTabs = GM_getValue(WORKSPACE_TABS_KEY, []);
-    let isWorkspaceOpen = GM_getValue(WORKSPACE_OPEN_KEY, false);
-    let activeTabId = GM_getValue(WORKSPACE_ACTIVE_TAB_KEY, null);
+    // Load state from storage with error handling
+    let accounts = [];
+    let workspaceTabs = [];
+    let isWorkspaceOpen = false;
+    let activeTabId = null;
+
+    try {
+        accounts = GM_getValue(ACCOUNTS_KEY, []);
+        workspaceTabs = GM_getValue(WORKSPACE_TABS_KEY, []);
+        isWorkspaceOpen = GM_getValue(WORKSPACE_OPEN_KEY, false);
+        activeTabId = GM_getValue(WORKSPACE_ACTIVE_TAB_KEY, null);
+    } catch (error) {
+        console.error('GC Power Tools: Failed to load state from storage:', error);
+    }
 
     function saveAccounts(accs) {
-        GM_setValue(ACCOUNTS_KEY, accs);
-        accounts = accs;
+        try {
+            GM_setValue(ACCOUNTS_KEY, accs);
+            accounts = accs;
+        } catch (error) {
+            console.error('GC Power Tools: Failed to save accounts:', error);
+        }
     }
 
     // ==========================================
@@ -36,7 +49,7 @@ export const userscriptCode = `// ==UserScript==
     // ==========================================
     const container = document.createElement('div');
     container.id = 'gc-power-tools-container';
-    container.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 2147483646; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;';
+    container.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9998; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;';
 
     const toggleBtn = document.createElement('button');
     toggleBtn.innerHTML = '🛠️';
@@ -66,7 +79,7 @@ export const userscriptCode = `// ==UserScript==
     // UI: Add Account Dialog
     // ==========================================
     const dialog = document.createElement('dialog');
-    dialog.style.cssText = 'padding: 20px; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-family: sans-serif; background: white; width: 300px; color: #333; z-index: 2147483647;';
+    dialog.style.cssText = 'padding: 20px; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-family: sans-serif; background: white; width: 300px; color: #333; z-index: 10000;';
     dialog.innerHTML = \`
         <h3 style="margin-top: 0; color: #02874d; font-size: 18px;">Add Account</h3>
         <form id="gc-switcher-form" method="dialog" style="display: flex; flex-direction: column; gap: 12px;">
@@ -112,7 +125,7 @@ export const userscriptCode = `// ==UserScript==
     // UI: Workspace (Cache Manager)
     // ==========================================
     const workspace = document.createElement('div');
-    workspace.style.cssText = 'position: fixed; inset: 0; z-index: 2147483647; background: #f0f0f0; display: none; flex-direction: column; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;';
+    workspace.style.cssText = 'position: fixed; inset: 0; z-index: 9999; background: #f0f0f0; display: none; flex-direction: column; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;';
 
     const wsHeader = document.createElement('div');
     wsHeader.style.cssText = 'height: 50px; background: #02874d; display: flex; align-items: center; padding: 0 15px; gap: 15px; color: white; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2;';
@@ -150,11 +163,15 @@ export const userscriptCode = `// ==UserScript==
             title = val;
         }
 
-        const newTab = { id: Date.now().toString(), title, url: finalUrl };
+        const newTab = { id: \`tab-\${Date.now()}-\${Math.random().toString(36).substring(2, 9)}\`, title, url: finalUrl };
         workspaceTabs.push(newTab);
-        GM_setValue(WORKSPACE_TABS_KEY, workspaceTabs);
-        activeTabId = newTab.id;
-        GM_setValue(WORKSPACE_ACTIVE_TAB_KEY, activeTabId);
+        try {
+            GM_setValue(WORKSPACE_TABS_KEY, workspaceTabs);
+            activeTabId = newTab.id;
+            GM_setValue(WORKSPACE_ACTIVE_TAB_KEY, activeTabId);
+        } catch (error) {
+            console.error('GC Power Tools: Failed to save workspace tab:', error);
+        }
         input.value = '';
         renderWorkspace();
     };
@@ -172,7 +189,11 @@ export const userscriptCode = `// ==UserScript==
         const acc = accounts.find(a => a.username === username);
         if (acc) {
             // Ensure workspace reopens after login redirect
-            GM_setValue(WORKSPACE_OPEN_KEY, true);
+            try {
+                GM_setValue(WORKSPACE_OPEN_KEY, true);
+            } catch (error) {
+                console.error('GC Power Tools: Failed to save workspace state:', error);
+            }
             switchAccount(acc);
         }
     };
@@ -184,7 +205,11 @@ export const userscriptCode = `// ==UserScript==
     closeWsBtn.style.cssText = 'background: transparent; color: white; border: none; font-size: 24px; cursor: pointer; padding: 0 5px; line-height: 1;';
     closeWsBtn.onclick = () => {
         isWorkspaceOpen = false;
-        GM_setValue(WORKSPACE_OPEN_KEY, false);
+        try {
+            GM_setValue(WORKSPACE_OPEN_KEY, false);
+        } catch (error) {
+            console.error('GC Power Tools: Failed to save workspace state:', error);
+        }
         renderWorkspace();
     };
 
@@ -233,7 +258,11 @@ export const userscriptCode = `// ==UserScript==
         openWsBtn.onmouseout = () => openWsBtn.style.background = '#02874d';
         openWsBtn.onclick = () => {
             isWorkspaceOpen = true;
-            GM_setValue(WORKSPACE_OPEN_KEY, true);
+            try {
+                GM_setValue(WORKSPACE_OPEN_KEY, true);
+            } catch (error) {
+                console.error('GC Power Tools: Failed to save workspace state:', error);
+            }
             panel.style.display = 'none';
             renderWorkspace();
         };
@@ -349,7 +378,11 @@ export const userscriptCode = `// ==UserScript==
 
             tabEl.onclick = () => {
                 activeTabId = tab.id;
-                GM_setValue(WORKSPACE_ACTIVE_TAB_KEY, activeTabId);
+                try {
+                    GM_setValue(WORKSPACE_ACTIVE_TAB_KEY, activeTabId);
+                } catch (error) {
+                    console.error('GC Power Tools: Failed to save active tab:', error);
+                }
                 renderWorkspace();
             };
 
@@ -365,10 +398,14 @@ export const userscriptCode = `// ==UserScript==
             closeBtn.onclick = (e) => {
                 e.stopPropagation();
                 workspaceTabs = workspaceTabs.filter(t => t.id !== tab.id);
-                GM_setValue(WORKSPACE_TABS_KEY, workspaceTabs);
-                if (activeTabId === tab.id) {
-                    activeTabId = workspaceTabs.length > 0 ? workspaceTabs[workspaceTabs.length - 1].id : null;
-                    GM_setValue(WORKSPACE_ACTIVE_TAB_KEY, activeTabId);
+                try {
+                    GM_setValue(WORKSPACE_TABS_KEY, workspaceTabs);
+                    if (activeTabId === tab.id) {
+                        activeTabId = workspaceTabs.length > 0 ? workspaceTabs[workspaceTabs.length - 1].id : null;
+                        GM_setValue(WORKSPACE_ACTIVE_TAB_KEY, activeTabId);
+                    }
+                } catch (error) {
+                    console.error('GC Power Tools: Failed to save workspace tabs:', error);
                 }
                 renderWorkspace();
             };
@@ -433,8 +470,12 @@ export const userscriptCode = `// ==UserScript==
     // Core Switching Logic
     // ==========================================
     function switchAccount(acc) {
-        GM_setValue(SWITCH_INTENT_KEY, acc);
-        
+        try {
+            GM_setValue(SWITCH_INTENT_KEY, acc);
+        } catch (error) {
+            console.error('GC Power Tools: Failed to save switch intent:', error);
+        }
+
         const logoutLink = document.querySelector('a[href*="/account/logout"], a[href*="/play/logout"], a[href*="/login/default.aspx?Wiz=out"]');
         const isLoggedIn = document.querySelector('.user-menu, .profile-avatar') || logoutLink;
 
