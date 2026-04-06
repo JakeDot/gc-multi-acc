@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "GC Multi-Acc Pro",
+  "version": "1.0.0",
+  "description": "Switch Gartic.io accounts instantly.",
+  "permissions": ["cookies", "storage", "tabs"],
+  "host_permissions": ["*://*.gartic.io/*"],
+  "action": {
+    "default_popup": "index.html"
+  },
+  "icons": {
+    "128": "icon-512.png"
+  }
+}
