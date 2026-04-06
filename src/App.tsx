@@ -36,7 +36,7 @@ export default function App() {
       id: Date.now().toString(),
       name: newAccount.name,
       token: newAccount.token,
-      avatar: newAccount.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${newAccount.name}`
+      avatar: newAccount.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(newAccount.name)}`
     };
 
     try {
