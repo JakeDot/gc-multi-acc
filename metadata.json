@@ -1,0 +1,5 @@
+{
+  "name": "Geocaching Multi-Account Switcher",
+  "description": "A userscript generator for switching between multiple Geocaching.com accounts.",
+  "requestFramePermissions": []
+}
